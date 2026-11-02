@@ -1,0 +1,2 @@
+# zshrc
+Modularised ZSH configuration
