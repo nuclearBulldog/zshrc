@@ -1,159 +1,119 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
+# Powerlevel10k instant prompt must remain near the top.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-source ~/antigen.zsh
+# Homebrew must be available before commands and plugins that depend on it.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+fi
 
-antigen use oh-my-zsh
+# Environment and general shell configuration.
+source "$HOME/zshrc/general.sh"
+source "$HOME/zshrc/macos.sh"
 
-antigen bundle git
-antigen bundle command-not-found
+# Antigen plugin management.
+if [[ -r "$HOME/antigen.zsh" ]]; then
+    source "$HOME/antigen.zsh"
 
-antigen bundle zsh-users/zsh-syntax-highlighting
+    antigen use oh-my-zsh
 
-antigen bundle <<EOBUNDLES
-    wintermi/zsh-brew
-    zshzoo/macos
-    zsh-users/zsh-syntax-highlighting
-    zsh-users/zsh-completions
-    casonadams/alacritty-shell
-    raisty/alt-and-select
-    Sam-programs/zsh-calc
-    GeoLMg/apt-zsh-plugin
-    zuxfoucault/colored-man-pages_mod
-    aemonge/zsh-hookie-projects
-    chrissicool/zsh-256color
-    z-shell/zsh-fancy-completions
-    zdharma-continuum/zui
-    hlissner/zsh-autopair
-    jumbojett/zsh-autosuggestions-plugin
-    unixorn/autoupdate-antigen.zshplugin
-    TamCore/autoupdate-oh-my-zsh-plugins
-    drkhsh/zsh-banner
-    chrissicool/zsh-bash
-    Jactry/zsh_battery_state
-    0b10/cheatsheet
-    joow/macos
-    zpm-zsh/pretty-time
+    antigen bundle git
+    antigen bundle command-not-found
+
+    antigen bundle <<'EOBUNDLES'
+wintermi/zsh-brew
+zshzoo/macos
+zsh-users/zsh-completions
+casonadams/alacritty-shell
+raisty/alt-and-select
+Sam-programs/zsh-calc
+GeoLMg/apt-zsh-plugin
+zuxfoucault/colored-man-pages_mod
+aemonge/zsh-hookie-projects
+chrissicool/zsh-256color
+z-shell/zsh-fancy-completions
+zdharma-continuum/zui
+hlissner/zsh-autopair
+jumbojett/zsh-autosuggestions-plugin
+unixorn/autoupdate-antigen.zshplugin
+TamCore/autoupdate-oh-my-zsh-plugins
+drkhsh/zsh-banner
+chrissicool/zsh-bash
+Jactry/zsh_battery_state
+0b10/cheatsheet
+joow/macos
+zpm-zsh/pretty-time
+zsh-users/zsh-syntax-highlighting
 EOBUNDLES
 
-# Load the theme.
-antigen theme romkatv/powerlevel10k
-
-antigen apply
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-###-begin-npm-completion-###
-#
-# npm command completion script
-#
-# Installation: npm completion >> ~/.bashrc  (or ~/.zshrc)
-# Or, maybe: npm completion > /usr/local/etc/bash_completion.d/npm
-#
-
-
-
-if type complete &>/dev/null; then
-  _npm_completion () {
-    local words cword
-    if type _get_comp_words_by_ref &>/dev/null; then
-      _get_comp_words_by_ref -n = -n @ -n : -w words -i cword
-    else
-      cword="$COMP_CWORD"
-      words=("${COMP_WORDS[@]}")
-    fi
-
-    local si="$IFS"
-    if ! IFS=$'\n' COMPREPLY=($(COMP_CWORD="$cword" \
-                           COMP_LINE="$COMP_LINE" \
-                           COMP_POINT="$COMP_POINT" \
-                           npm completion -- "${words[@]}" \
-                           2>/dev/null)); then
-      local ret=$?
-      IFS="$si"
-      return $ret
-    fi
-    IFS="$si"
-    if type __ltrim_colon_completions &>/dev/null; then
-      __ltrim_colon_completions "${words[cword]}"
-    fi
-  }
-  complete -o default -F _npm_completion npm
-elif type compdef &>/dev/null; then
-  _npm_completion() {
-    local si=$IFS
-    compadd -- $(COMP_CWORD=$((CURRENT-1)) \
-                 COMP_LINE=$BUFFER \
-                 COMP_POINT=0 \
-                 npm completion -- "${words[@]}" \
-                 2>/dev/null)
-    IFS=$si
-  }
-  compdef _npm_completion npm
-elif type compctl &>/dev/null; then
-  _npm_completion () {
-    local cword line point words si
-    read -Ac words
-    read -cn cword
-    let cword-=1
-    read -l line
-    read -ln point
-    si="$IFS"
-    if ! IFS=$'\n' reply=($(COMP_CWORD="$cword" \
-                       COMP_LINE="$line" \
-                       COMP_POINT="$point" \
-                       npm completion -- "${words[@]}" \
-                       2>/dev/null)); then
-
-      local ret=$?
-      IFS="$si"
-      return $ret
-    fi
-    IFS="$si"
-  }
-  compctl -K _npm_completion npm
-fi
-###-end-npm-completion-###
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
+    antigen theme romkatv/powerlevel10k
+    antigen apply
 else
-    if [ -f "/opt/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/opt/anaconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/opt/anaconda3/bin:$PATH"
-    fi
+    print -P "%F{yellow}[WARN]%f Antigen not found at $HOME/antigen.zsh"
+    print -P "%F{yellow}[WARN]%f Run $HOME/zshrc/bootstrap.zsh"
 fi
-unset __conda_setup
-# <<< conda initialize <<<
 
+# Powerlevel10k configuration.
+[[ -r "$HOME/.p10k.zsh" ]] && source "$HOME/.p10k.zsh"
 
-# bun completions
-[ -s "/Users/calebd/.bun/_bun" ] && source "/Users/calebd/.bun/_bun"
+# NVM.
+export NVM_DIR="$HOME/.nvm"
 
-# >>> spawn >>>
-export PATH="/Users/calebd/.bun/bin:$PATH"
-# <<< spawn <<<
+[[ -s "$NVM_DIR/nvm.sh" ]] &&
+    source "$NVM_DIR/nvm.sh"
 
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+[[ -s "$NVM_DIR/bash_completion" ]] &&
+    source "$NVM_DIR/bash_completion"
 
-eval "$(zoxide init zsh)"
+# Conda.
+if [[ -x /opt/anaconda3/bin/conda ]]; then
+    __conda_setup="$('/opt/anaconda3/bin/conda' shell.zsh hook 2>/dev/null)"
 
-# Added by cua-driver-rs installer — see https://github.com/trycua/cua
-export PATH="/Users/calebd/.local/bin:$PATH"
-export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/calebd/.docker/completions $fpath)
+    if [[ $? -eq 0 ]]; then
+        eval "$__conda_setup"
+    elif [[ -r /opt/anaconda3/etc/profile.d/conda.sh ]]; then
+        source /opt/anaconda3/etc/profile.d/conda.sh
+    else
+        path=(/opt/anaconda3/bin $path)
+    fi
+
+    unset __conda_setup
+fi
+
+# Bun.
+export BUN_INSTALL="$HOME/.bun"
+path=("$BUN_INSTALL/bin" $path)
+
+[[ -s "$BUN_INSTALL/_bun" ]] &&
+    source "$BUN_INSTALL/_bun"
+
+# User-installed executables and OpenJDK.
+path=(
+    "$HOME/.local/bin"
+    /opt/homebrew/opt/openjdk/bin
+    $path
+)
+
+# Docker completions.
+if [[ -d "$HOME/.docker/completions" ]]; then
+    fpath=("$HOME/.docker/completions" $fpath)
+fi
+
+# Initialise completion once.
 autoload -Uz compinit
-(( ${+_comps[docker]} )) || compinit
-# End of Docker CLI completions
+compinit
+
+# Optional command integrations.
+if (( $+commands[zoxide] )); then
+    eval "$(zoxide init zsh)"
+fi
+
+# Interactive aliases and custom completions.
+source "$HOME/zshrc/alias.sh"
+
+if (( $+commands[lazygit] )); then
+    source "$HOME/zshrc/lazygit.sh"
+fi

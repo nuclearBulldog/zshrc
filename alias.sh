@@ -1,17 +1,32 @@
 alias cls="clear"
-alias v="nvim"
-alias vim="nvim"
-alias sv="sudoedit"
-alias ls="eza"
-alias ll="eza -la --icons --git "
-alias tree="eza --tree --icons "
-alias cat="bat "
-alias grep="rg "
-# alias find="fd "
-alias show="dust "
-alias cd="z "
-alias netCh="networkQuality -v"
 
-# Show/hide Apple's hidden files.
-alias files_show='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
-alias files_hide='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
+if (( $+commands[nvim] )); then
+    alias v="nvim"
+    alias vim="nvim"
+    alias sv="sudoedit"
+fi
+
+if (( $+commands[eza] )); then
+    alias ls="eza"
+    alias ll="eza -la --icons --git"
+    alias tree="eza --tree --icons"
+fi
+
+if (( $+commands[bat] )); then
+    alias cat="bat"
+fi
+
+if (( $+commands[rg] )); then
+    alias grep="rg"
+fi
+
+if (( $+commands[dust] )); then
+    alias show="dust"
+fi
+
+if (( $+commands[networkQuality] )); then
+    alias netCh="networkQuality -v"
+fi
+
+alias files_show='defaults write com.apple.finder AppleShowAllFiles YES && killall Finder'
+alias files_hide='defaults write com.apple.finder AppleShowAllFiles NO && killall Finder'
